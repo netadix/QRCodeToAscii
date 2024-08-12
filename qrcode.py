@@ -1,6 +1,10 @@
 import cv2
 import numpy as np
-import pyperclip
+import unicodedata
+
+def is_fullwidth(char):
+    """Check if the character is full-width."""
+    return unicodedata.east_asian_width(char) in ('F', 'W', 'A')
 
 def generate_ascii_qr(image_path, scale_factor, ascii_char='#'):
     img = cv2.imread(image_path)
@@ -42,14 +46,15 @@ def generate_ascii_qr(image_path, scale_factor, ascii_char='#'):
             qr_ascii_art += ascii_char if scaled_qr[y, x] == 0 else ' '
         qr_ascii_art += '\n'
 
-    # クリップボードにコピー
-    pyperclip.copy(qr_ascii_art)
+    # 全角文字の長さに合わせてスペースも全角に変換
+    if len(ascii_char) == 1 and is_fullwidth(ascii_char):
+        qr_ascii_art = qr_ascii_art.replace(' ', '　')
 
-    print("QR code ASCII art copied to clipboard:")
     print(qr_ascii_art)
 
 # プロンプトからファイル名と倍率を取得
 image_path = input("Enter the QR code image file name (default: qrcode.png): ") or 'qrcode.png'
 scale_factor = int(input("Enter the scale factor (default: 1): ") or 1)
+ascii_char = input("Enter the ASCII character (default: #): ") or '#'
 
-generate_ascii_qr(image_path, scale_factor, ascii_char='@')
+generate_ascii_qr(image_path, scale_factor, ascii_char)
